@@ -804,3 +804,282 @@ body {
   .modal { padding: 28px 20px; }
   .modal-actions { flex-direction: column; }
 }
+
+/* ============================================================
+   NUEVOS ESTILOS - Marcador en vivo, Ranking, Finalizar
+   ============================================================ */
+
+/* ── LIVE SECTION ── */
+.live-section {
+  padding: 0 0 0;
+}
+.live-card { }
+
+.live-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.live-team-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 80px;
+}
+.live-flag { font-size: 32px; line-height: 1; }
+.live-team-name {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+}
+.live-score-input {
+  width: 80px;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 900;
+  padding: 10px 6px;
+}
+
+.live-vs {
+  font-family: var(--font-display);
+  font-size: 40px;
+  color: var(--yellow);
+  line-height: 1;
+  padding-bottom: 4px;
+  align-self: flex-end;
+}
+
+.live-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.btn-live-update {
+  background: var(--green);
+  color: var(--white);
+  font-weight: 800;
+}
+.btn-live-update:hover:not(:disabled) {
+  background: #23903e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(26,107,46,0.4);
+}
+
+.btn-finish-match {
+  background: linear-gradient(135deg, #7B2D00, var(--red));
+  color: var(--white);
+  font-weight: 800;
+  border: 1.5px solid var(--red);
+}
+.btn-finish-match:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+/* ── LIVE DISPLAY SCOREBOARD ── */
+.live-display {
+  margin-top: 24px;
+  background: var(--dark2);
+  border: 2px solid var(--red);
+  border-radius: var(--radius);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.live-scoreboard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--font-display);
+}
+.live-sb-team {
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.8);
+}
+.live-sb-score {
+  font-size: 42px;
+  color: var(--yellow);
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 20px rgba(255,209,0,0.3);
+}
+
+.live-status-dot-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.live-pulse-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--red);
+  animation: pulse 1s infinite;
+  box-shadow: 0 0 8px var(--red);
+}
+.live-status-label {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: var(--red);
+}
+
+/* ── RANKING TABLE ── */
+.ranking-card { margin-top: 20px; }
+
+.ranking-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 520px;
+}
+.ranking-table thead tr {
+  background: var(--blue);
+  border-bottom: 2px solid var(--yellow);
+}
+.ranking-table th {
+  padding: 12px 14px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  text-align: left;
+}
+.ranking-table th:first-child { text-align: center; width: 48px; }
+.ranking-table th:nth-child(3),
+.ranking-table th:nth-child(4),
+.ranking-table th:nth-child(5) { text-align: center; }
+
+.ranking-table tbody tr {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.15s;
+}
+.ranking-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+.rank-row-exact {
+  background: rgba(26,107,46,0.1) !important;
+  border-left: 3px solid var(--green) !important;
+}
+.ranking-table td {
+  padding: 13px 14px;
+  font-size: 14px;
+  vertical-align: middle;
+}
+.rank-pos { text-align: center; font-size: 18px; }
+.td-earn  { text-align: center; font-weight: 700; }
+.rank-earn {
+  color: var(--yellow);
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.04em;
+}
+
+/* Rank tags */
+.rank-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.rank-exact { background: rgba(26,107,46,0.3); color: #5be08a; border: 1px solid var(--green); }
+.rank-close { background: rgba(0,68,168,0.3);  color: #7ab8ff; border: 1px solid var(--blue2); }
+.rank-far   { background: rgba(206,17,38,0.15); color: #ff6b7a; border: 1px solid var(--red); }
+
+/* ── TABLA PARTICIPANTES: scroll horizontal ── */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.participants-table {
+  min-width: 560px;
+}
+
+/* ── MODAL FINALIZAR / RESULTADO ── */
+.btn-confirm-finish {
+  background: linear-gradient(135deg, #7B2D00, var(--red));
+  color: var(--white);
+  font-weight: 800;
+  border: 1.5px solid var(--red);
+}
+.btn-confirm-finish:hover { filter: brightness(1.1); }
+
+.modal-result {
+  max-width: 480px;
+}
+.final-scoreboard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  margin: 12px 0 8px;
+  background: var(--dark2);
+  border-radius: var(--radius-sm);
+  padding: 14px 20px;
+}
+.final-score {
+  font-size: 40px;
+  color: var(--yellow);
+  letter-spacing: 0.1em;
+}
+.final-winners-label {
+  font-weight: 700;
+  font-size: 14px;
+  margin: 12px 0 8px;
+  color: var(--yellow);
+  text-align: left;
+}
+.final-winners-list {
+  list-style: none;
+  text-align: left;
+  padding: 0;
+  margin: 0 0 12px;
+}
+.final-winners-list li {
+  font-size: 14px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  color: #5be08a;
+}
+.final-no-winner {
+  font-size: 14px;
+  color: rgba(255,255,255,0.55);
+  margin: 12px 0;
+}
+.final-total {
+  font-size: 14px;
+  color: rgba(255,255,255,0.6);
+  margin-top: 8px;
+}
+.final-total strong { color: var(--yellow); font-size: 16px; }
+
+/* ── FIX: export score pill muestra marcadores ── */
+.export-riv { color: rgba(255,255,255,0.9); }
+
+/* ── RESPONSIVE ajustes live ── */
+@media (max-width: 600px) {
+  .live-input-row { gap: 12px; }
+  .live-score-input { width: 66px; font-size: 22px; }
+  .live-sb-score { font-size: 32px; }
+  .live-sb-team  { font-size: 14px; }
+  .live-actions  { flex-direction: row; flex-wrap: wrap; }
+}
