@@ -591,6 +591,79 @@ function loadScript(src) {
 }
 
 // ══════════════════════════════════════════════════════════════
+//  LIMPIAR / NUEVO PARTIDO
+// ══════════════════════════════════════════════════════════════
+
+function confirmClearMatch() {
+  document.getElementById('clearModalOverlay').classList.add('active');
+}
+
+function cancelClear() {
+  document.getElementById('clearModalOverlay').classList.remove('active');
+}
+
+async function clearMatch() {
+  cancelClear();
+  await dbClearMatch(state.matchId);
+
+  // Resetear estado
+  state.rival        = 'Rival';
+  state.rivalFlag    = '🏳️';
+  state.cuota        = 50000;
+  state.participants = [];
+  state.closed       = false;
+  state.finished     = false;
+  state.editingId    = null;
+  state.liveCol      = null;
+  state.liveRiv      = null;
+
+  // Restaurar campos
+  document.getElementById('rival').value  = '';
+  document.getElementById('cuota').value  = 50000;
+  document.getElementById('rival').disabled        = false;
+  document.getElementById('cuota').disabled        = false;
+  document.getElementById('participantName').disabled = false;
+  document.getElementById('scoreCol').disabled     = false;
+  document.getElementById('scoreRival').disabled   = false;
+
+  const addBtn = document.getElementById('addBtn');
+  addBtn.disabled    = false;
+  addBtn.textContent = '＋ Inscribir';
+
+  const closeBtn = document.getElementById('closeRegBtn');
+  closeBtn.disabled  = false;
+  closeBtn.style.opacity = '1';
+  closeBtn.style.cursor  = 'pointer';
+
+  const finBtn = document.getElementById('finishMatchBtn');
+  finBtn.disabled  = false;
+  finBtn.style.opacity = '1';
+  finBtn.style.cursor  = 'pointer';
+
+  const updBtn = document.querySelector('.btn-live-update');
+  if (updBtn) { updBtn.disabled = false; updBtn.style.opacity = '1'; }
+
+  const badge = document.getElementById('statusBadge');
+  badge.classList.remove('closed');
+  badge.classList.add('open');
+  badge.innerHTML = '<span class="status-dot"></span><span class="status-text">Inscripciones abiertas</span>';
+
+  document.getElementById('liveCol').value   = 0;
+  document.getElementById('liveRiv').value   = 0;
+  document.getElementById('liveCol').disabled = false;
+  document.getElementById('liveRiv').disabled = false;
+  document.getElementById('liveDisplay').style.display  = 'none';
+  document.getElementById('rankingCard').style.display  = 'none';
+  document.getElementById('addHint').textContent = 'Ingresa el nombre y el marcador que crees que quedará el partido';
+
+  updateRival();
+  updatePrize();
+  renderTable();
+  showToast('🆕 Partido limpiado. ¡Listo para una nueva pulla!');
+}
+
+
+// ══════════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════════
 
