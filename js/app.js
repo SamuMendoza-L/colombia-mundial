@@ -439,6 +439,21 @@ async function finishMatch() {
   `;
   document.getElementById('resultModalOverlay').classList.add('active');
 
+  // Guardar en historial antes de persistir el estado final
+  await dbSaveHistory({
+    matchId:      state.matchId,
+    rival:        state.rival,
+    rivalFlag:    state.rivalFlag,
+    cuota:        state.cuota,
+    participants: state.participants,
+    liveCol:      state.liveCol,
+    liveRiv:      state.liveRiv,
+    winners:      winners.map(w => ({ name: w.name, col: w.col, rival: w.rival })),
+    prizeEach:    prizeEach,
+    totalPot:     totalPot,
+    finishedAt:   new Date().toISOString(),
+  });
+
   await dbSaveMatch(buildPayload());
   renderTable();
   renderRanking();
