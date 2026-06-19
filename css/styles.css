@@ -759,12 +759,26 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  background: #2A2A2E;
-  border: 1.5px solid #3A3A40;
+  background: #0A1628;
+  border: 2px solid #FFD100;
   border-radius: 5px;
   padding: 3px 10px;
   font-size: 18px;
   font-weight: 700;
+  color: #FFFFFF;
+}
+.export-score-pill .export-col {
+  color: #FFD100;
+  font-weight: 900;
+}
+.export-score-pill .export-div {
+  color: rgba(255,255,255,0.5);
+  font-size: 13px;
+  margin: 0 2px;
+}
+.export-score-pill .export-riv {
+  color: #FFFFFF;
+  font-weight: 900;
 }
 .export-col { color: #FFD100; }
 .export-div { color: rgba(255,255,255,0.35); font-size: 12px; }
