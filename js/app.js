@@ -323,7 +323,14 @@ function renderRanking() {
     const liveRes = getResult(liveCol, liveRiv);
     const resultMatch = predRes.rank === liveRes.rank;
 
-    return { ...p, exactMatch, distScore, resultMatch };
+    // ── Verificar si el marcador todavía es alcanzable ──
+    // Si los goles en vivo ya superaron lo que predijo para cualquier equipo,
+    // esa predicción está matemáticamente eliminada
+    const colEliminado  = liveCol > p.col;   // Colombia ya metió más goles de los que predijo
+    const rivEliminado  = liveRiv > p.rival; // El rival ya metió más goles de los que predijo
+    const stillPossible = !colEliminado && !rivEliminado;
+
+    return { ...p, exactMatch, distScore, resultMatch: resultMatch && stillPossible, stillPossible };
   });
 
   // Ordenar: primero exacto, luego por distancia, luego resultado correcto
