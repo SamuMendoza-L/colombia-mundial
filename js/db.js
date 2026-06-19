@@ -53,3 +53,36 @@ function localLoad(key) {
     return s ? JSON.parse(s) : null;
   } catch(e) { return null; }
 }
+
+// ── Guardar partido en historial ──────────────────────────────
+async function dbSaveHistory(matchData) {
+  if (!dbReady()) {
+    const history = localLoad('pulla_history') || [];
+    history.push(matchData);
+    return localSave('pulla_history', history);
+  }
+  const { data, error } = await supabaseClient
+    .from('match_history')
+    .insert({ ...matchData });
+  if (error) {
+    console.error('dbSaveHistory:', error);
+    const history = localLoad('pulla_history') || [];
+    history.push(matchData);
+    localSave('pulla_history', history);
+  }
+  return { data, error };
+}
+
+// ── Borrar partido activo ─────────────────────────────────────
+async function dbClearMatch(matchId) {
+  if (!dbReady()) {
+    localStorage.removeItem('pulla_match');
+    return { data: null, error: null };
+  }
+  const { data, error } = await supabaseClient
+    .from('matches')
+    .delete()
+    .eq('id', matchId);
+  if (error) console.error('dbClearMatch:', error);
+  return { data, error };
+}
