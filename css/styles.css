@@ -1097,3 +1097,24 @@ body {
   .live-sb-team  { font-size: 14px; }
   .live-actions  { flex-direction: row; flex-wrap: wrap; }
 }
+
+/* ── BOTÓN NUEVO PARTIDO ── */
+.btn-clear-match {
+  background: transparent;
+  color: rgba(255,255,255,0.55);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  font-size: 13px;
+  width: 100%;
+  justify-content: center;
+}
+.btn-clear-match:hover {
+  border-color: var(--yellow);
+  color: var(--yellow);
+}
+
+.btn-clear-confirm {
+  background: var(--yellow);
+  color: var(--black);
+  font-weight: 900;
+}
+.btn-clear-confirm:hover { background: #ffe033; }

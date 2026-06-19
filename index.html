@@ -62,6 +62,11 @@
             </div>
           </div>
         </div>
+          <div style="margin-top:20px; padding-top:18px; border-top:1px solid rgba(255,255,255,0.08);">
+          <button class="btn btn-clear-match" onclick="confirmClearMatch()">
+            🆕 Nuevo partido / Limpiar datos
+          </button>
+        </div>
       </div>
 
       <!-- PRIZE DISPLAY -->
@@ -275,6 +280,24 @@
       </div>
     </div>
   </div>
+
+  <!-- MODAL LIMPIAR / NUEVO PARTIDO -->
+  <div class="modal-overlay" id="clearModalOverlay" onclick="cancelClear()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-icon">🆕</div>
+      <h3 class="modal-title">¿Nuevo partido?</h3>
+      <p class="modal-text">
+        Se borrarán todos los participantes y el marcador actual.<br/>
+        <strong style="color:#FFD100;">El partido finalizado ya quedó guardado en el historial.</strong>
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-cancel" onclick="cancelClear()">Cancelar</button>
+        <button class="btn btn-clear-confirm" onclick="clearMatch()">Sí, nuevo partido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
 
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
