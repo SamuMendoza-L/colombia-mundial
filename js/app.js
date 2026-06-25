@@ -3,31 +3,30 @@
    app.js  —  Lógica principal
    ========================================================== */
 
-
 // ══════════════════════════════════════════════════════════════
 //  NAVEGACIÓN POR SECCIONES
 // ══════════════════════════════════════════════════════════════
- 
+
 function navigateTo(section) {
   // Paneles
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   const target = document.getElementById('panel-' + section);
   if (target) target.classList.add('active');
- 
+
   // Sidebar nav
   document.querySelectorAll('.nav-item').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.section === section);
   });
- 
+
   // Bottom nav
   document.querySelectorAll('.bnav-item').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.section === section);
   });
- 
+
   // Actualizar resumen al entrar en Finalizar
   if (section === 'finalizar') updateSummary();
 }
- 
+
 function updateSummary() {
   const matchEl  = document.getElementById('summaryMatch');
   const countEl  = document.getElementById('summaryCount');
@@ -193,11 +192,41 @@ function updateRival() {
 function updatePrize() {
   const raw = parseFloat(document.getElementById('cuota').value) || 0;
   state.cuota = raw;
-  const total = raw * state.participants.length;
+  const total      = raw * state.participants.length;
+  const paidCount  = state.participants.filter(p => p.paid).length;
+  const collected  = raw * paidCount;
+  const pending    = state.participants.length - paidCount;
+
   document.getElementById('prizeAmount').textContent = formatCOP(total);
   document.getElementById('prizeSub').textContent =
     `${state.participants.length} participante${state.participants.length !== 1 ? 's' : ''} × ${formatCOP(raw)}`;
+
+  // Línea de cobro
+  const collectedEl = document.getElementById('prizeCollected');
+  if (collectedEl) {
+    collectedEl.innerHTML = `
+      <span class="collect-item collect-ok">
+        ✅ Recogido: <strong>${formatCOP(collected)}</strong>
+        <em>(${paidCount} pagaron)</em>
+      </span>
+      ${pending > 0 ? `<span class="collect-item collect-pending">
+        ⏳ Faltan: <strong>${formatCOP(raw * pending)}</strong>
+        <em>(${pending} por pagar)</em>
+      </span>` : `<span class="collect-item collect-done">🎉 ¡Todos pagaron!</span>`}
+    `;
+  }
   scheduleSave();
+}
+
+// ── Toggle pago de participante ───────────────────────────────
+function togglePaid(id) {
+  const p = state.participants.find(p => p.id === id);
+  if (!p) return;
+  p.paid = !p.paid;
+  renderTable();
+  updatePrize();
+  scheduleSave();
+  showToast(p.paid ? `💰 ${p.name} marcado como pagó` : `↩️ ${p.name} marcado como pendiente`);
 }
 
 // ── Agregar participante ──────────────────────────────────────
@@ -225,7 +254,7 @@ function addParticipant() {
     document.getElementById('addHint').textContent = 'Ingresa el nombre y el marcador que crees que quedará el partido';
     showToast(`✅ ${name} actualizado`);
   } else {
-    state.participants.push({ id: uid(), name, col, rival: riv });
+    state.participants.push({ id: uid(), name, col, rival: riv, paid: false });
     showToast(`🎉 ${name} inscrito con ${col}:${riv}`);
   }
 
@@ -293,8 +322,19 @@ function renderTable() {
   tbody.innerHTML = state.participants.map((p, i) => {
     const res = getResult(p.col, p.rival);
     const actionsHtml = (state.closed || state.finished)
-      ? '<span style="color:rgba(255,255,255,0.2);font-size:12px;">—</span>'
+      ? `<div class="action-cell">
+           <label class="pay-check ${p.paid ? 'is-paid' : ''}">
+             <input type="checkbox" ${p.paid ? 'checked' : ''} onchange="togglePaid('${p.id}')"/>
+             <span class="pay-check-box">${p.paid ? '✓' : ''}</span>
+             <span class="pay-check-label">${p.paid ? 'Pagó' : 'Pendiente'}</span>
+           </label>
+         </div>`
       : `<div class="action-cell">
+           <label class="pay-check ${p.paid ? 'is-paid' : ''}">
+             <input type="checkbox" ${p.paid ? 'checked' : ''} onchange="togglePaid('${p.id}')"/>
+             <span class="pay-check-box">${p.paid ? '✓' : ''}</span>
+             <span class="pay-check-label">${p.paid ? 'Pagó' : 'Pendiente'}</span>
+           </label>
            <button class="btn btn-edit"   onclick="editParticipant('${p.id}')">✏️ Editar</button>
            <button class="btn btn-delete" onclick="deleteParticipant('${p.id}')">🗑️ Eliminar</button>
          </div>`;
