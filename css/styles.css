@@ -1320,9 +1320,123 @@ body {
   .modal-actions { flex-direction: column; }
 }
 
+
+/* ============================================================
+   PAGO — checkbox + bloque de cobro bajo el pozo
+   ============================================================ */
+
+/* Bloque de cobro bajo el prize-banner */
+.prize-collected {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(200,244,0,0.15);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.collect-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 50px;
+}
+.collect-item strong { font-weight: 800; }
+.collect-item em {
+  font-style: normal;
+  opacity: 0.65;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.collect-ok {
+  background: rgba(26,107,46,0.2);
+  border: 1px solid rgba(26,107,46,0.5);
+  color: #5be08a;
+}
+.collect-pending {
+  background: rgba(206,17,38,0.12);
+  border: 1px solid rgba(206,17,38,0.4);
+  color: #ff8a96;
+}
+.collect-done {
+  background: rgba(200,244,0,0.1);
+  border: 1px solid rgba(200,244,0,0.35);
+  color: var(--lime);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+/* Checkbox de pago en la tabla */
+.pay-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  user-select: none;
+  padding: 5px 10px;
+  border-radius: var(--radius-xs);
+  border: 1.5px solid var(--border2);
+  background: transparent;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.pay-check input[type="checkbox"] {
+  display: none; /* usamos el span custom */
+}
+.pay-check-box {
+  width: 18px; height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  background: var(--surface2);
+}
+.pay-check-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  transition: color 0.15s;
+}
+
+/* Estado: pendiente (default) */
+.pay-check:hover {
+  border-color: rgba(200,244,0,0.4);
+}
+.pay-check:hover .pay-check-box {
+  border-color: rgba(200,244,0,0.5);
+}
+
+/* Estado: pagó */
+.pay-check.is-paid {
+  border-color: rgba(26,107,46,0.5);
+  background: rgba(26,107,46,0.1);
+}
+.pay-check.is-paid .pay-check-box {
+  background: #1A6B2E;
+  border-color: #1A6B2E;
+  color: #fff;
+}
+.pay-check.is-paid .pay-check-label {
+  color: #5be08a;
+}
+
+
 @media (max-width: 480px) {
   .action-buttons { flex-direction: column; width: 100%; }
   .action-buttons .btn { width: 100%; justify-content: center; }
   .live-sb-score { font-size: 32px; }
   .live-sb-team  { font-size: 13px; }
+  .prize-collected { flex-direction: column; align-items: center; }
+  .collect-item { width: 100%; justify-content: center; }
 }
