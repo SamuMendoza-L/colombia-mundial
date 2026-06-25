@@ -11,46 +11,74 @@
 </head>
 <body>
 
-  <!-- HEADER HERO -->
-  <header class="hero">
-    <div class="tricolor-band">
-      <span class="band yellow"></span>
-      <span class="band blue"></span>
-      <span class="band red"></span>
-    </div>
-    <div class="hero-content">
-      <div class="badge-wrap">
-        <div class="badge">MUNDIAL 2026</div>
+  <!-- APP SHELL -->
+  <div class="app-shell">
+
+    <!-- ══ SIDEBAR (desktop) ══ -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-tricolor">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">PULLA</span>
+          <span class="brand-sub">COLOMBIA 🇨🇴</span>
+        </div>
       </div>
-      <h1 class="hero-title">
-        <span class="flag-emoji">🇨🇴</span> PULLA<br/>COLOMBIA
-      </h1>
-      <p class="hero-sub">¿Quién la canta? Pon tu marcador y gana el pozo</p>
-    </div>
-    <div class="scoreboard-deco" aria-hidden="true">GOL</div>
-  </header>
 
-  <!-- SETUP SECTION -->
-  <section class="setup-section" id="setup">
-    <div class="container">
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-section="partido" onclick="navigateTo('partido')">
+          <span class="nav-icon">⚽</span>
+          <span class="nav-label">Partido</span>
+        </button>
+        <button class="nav-item" data-section="participantes" onclick="navigateTo('participantes')">
+          <span class="nav-icon">👥</span>
+          <span class="nav-label">Participantes</span>
+        </button>
+        <button class="nav-item" data-section="envivo" onclick="navigateTo('envivo')">
+          <span class="nav-icon">🔴</span>
+          <span class="nav-label">En Vivo</span>
+        </button>
+        <button class="nav-item" data-section="finalizar" onclick="navigateTo('finalizar')">
+          <span class="nav-icon">🏁</span>
+          <span class="nav-label">Finalizar</span>
+        </button>
+      </nav>
 
-      <!-- MATCH SETUP -->
-      <div class="card setup-card">
-        <h2 class="card-title"><span class="icon">⚽</span> Configurar Partido</h2>
-        <div class="setup-grid">
+      <div class="sidebar-footer">
+        <div class="sidebar-badge">MUNDIAL 2026</div>
+      </div>
+    </aside>
+
+    <!-- ══ MAIN CONTENT ══ -->
+    <main class="main-content">
+
+      <!-- ── SECTION: PARTIDO ── -->
+      <section class="panel active" id="panel-partido">
+        <div class="panel-header">
+          <h1 class="panel-title"><span>⚽</span> Configurar Partido</h1>
+          <p class="panel-sub">Define el rival y la cuota de la pulla</p>
+        </div>
+
+        <!-- Match vs display -->
+        <div class="match-hero">
+          <div class="match-team">
+            <span class="match-flag">🇨🇴</span>
+            <span class="match-name">Colombia</span>
+          </div>
+          <div class="match-vs-block">
+            <span class="match-vs">VS</span>
+          </div>
+          <div class="match-team rival-side">
+            <span class="match-flag" id="rivalFlag">🏳️</span>
+            <span class="match-name" id="rivalNameDisplay">Rival</span>
+          </div>
+        </div>
+
+        <!-- Setup fields -->
+        <div class="fields-row">
           <div class="field-group">
             <label class="field-label" for="rival">Rival de Colombia</label>
-            <div class="vs-row">
-              <div class="team-display col-team">
-                <span class="team-flag">🇨🇴</span>
-                <span class="team-name">Colombia</span>
-              </div>
-              <span class="vs-badge">VS</span>
-              <div class="team-display rival-team">
-                <span class="team-flag" id="rivalFlag">🏳️</span>
-                <span class="team-name" id="rivalNameDisplay">Rival</span>
-              </div>
-            </div>
             <input type="text" id="rival" class="input-field" placeholder="Ej: Argentina, Brasil, España..." maxlength="30" />
           </div>
           <div class="field-group">
@@ -62,159 +90,228 @@
             </div>
           </div>
         </div>
-          <div style="margin-top:20px; padding-top:18px; border-top:1px solid rgba(255,255,255,0.08);">
-          <button class="btn btn-clear-match" onclick="confirmClearMatch()">
-            🆕 Nuevo partido / Limpiar datos
-          </button>
+
+        <!-- Prize banner -->
+        <div class="prize-banner" id="prizeBanner">
+          <div class="prize-label">🏆 POZO ACUMULADO</div>
+          <div class="prize-amount" id="prizeAmount">$0</div>
+          <div class="prize-sub" id="prizeSub">0 participantes × $0</div>
         </div>
-      </div>
 
-      <!-- PRIZE DISPLAY -->
-      <div class="prize-banner" id="prizeBanner">
-        <div class="prize-label">🏆 POZO ACUMULADO</div>
-        <div class="prize-amount" id="prizeAmount">$0</div>
-        <div class="prize-sub" id="prizeSub">0 participantes × $0</div>
-      </div>
+        <button class="btn btn-go-next" onclick="navigateTo('participantes')">
+          Ir a participantes →
+        </button>
+      </section>
 
-      <!-- ADD PARTICIPANT -->
-      <div class="card add-card" id="addSection">
-        <h2 class="card-title"><span class="icon">👥</span> Inscribir Participante</h2>
-        <div class="add-grid">
-          <div class="field-group">
-            <label class="field-label" for="participantName">Nombre</label>
-            <input type="text" id="participantName" class="input-field" placeholder="Nombre del participante" maxlength="25" />
-          </div>
-          <div class="score-fields">
-            <div class="field-group score-field">
-              <label class="field-label">Colombia</label>
-              <input type="number" id="scoreCol" class="input-field score-input" placeholder="0" min="0" max="20" value="0" />
-            </div>
-            <span class="score-separator">:</span>
-            <div class="field-group score-field">
-              <label class="field-label" id="rivalScoreLabel">Rival</label>
-              <input type="number" id="scoreRival" class="input-field score-input" placeholder="0" min="0" max="20" value="0" />
-            </div>
-          </div>
-          <button class="btn btn-add" id="addBtn" onclick="addParticipant()">
-            ＋ Inscribir
-          </button>
+      <!-- ── SECTION: PARTICIPANTES ── -->
+      <section class="panel" id="panel-participantes">
+        <div class="panel-header">
+          <h1 class="panel-title"><span>👥</span> Participantes</h1>
+          <p class="panel-sub">Inscribe a cada participante con su predicción</p>
         </div>
-        <p class="add-hint" id="addHint">Ingresa el nombre y el marcador que crees que quedará el partido</p>
-      </div>
 
-    </div>
-  </section>
-
-  <!-- ══════════════════════════════════════════════════════
-       MARCADOR EN VIVO
-  ══════════════════════════════════════════════════════ -->
-  <section class="live-section" id="liveSection">
-    <div class="container">
-      <div class="card live-card">
-        <h2 class="card-title"><span class="icon">🔴</span> Marcador en Vivo</h2>
-
-        <div class="live-input-row">
-          <div class="live-team-block">
-            <span class="live-flag">🇨🇴</span>
-            <span class="live-team-name">Colombia</span>
-            <input type="number" id="liveCol" class="input-field live-score-input" min="0" max="20" value="0" />
-          </div>
-          <span class="live-vs">:</span>
-          <div class="live-team-block">
-            <span class="live-flag" id="liveFlagRival">🏳️</span>
-            <span class="live-team-name" id="liveRivalName">Rival</span>
-            <input type="number" id="liveRiv" class="input-field live-score-input" min="0" max="20" value="0" />
-          </div>
-
-          <div class="live-actions">
-            <button class="btn btn-live-update" onclick="updateLiveScore()">
-              ▶ Actualizar
+        <!-- Add participant card -->
+        <div class="card" id="addSection">
+          <h2 class="card-title">Inscribir participante</h2>
+          <div class="add-grid">
+            <div class="field-group">
+              <label class="field-label" for="participantName">Nombre</label>
+              <input type="text" id="participantName" class="input-field" placeholder="Nombre del participante" maxlength="25" />
+            </div>
+            <div class="score-fields">
+              <div class="field-group score-field">
+                <label class="field-label">Colombia</label>
+                <input type="number" id="scoreCol" class="input-field score-input" placeholder="0" min="0" max="20" value="0" />
+              </div>
+              <span class="score-separator">:</span>
+              <div class="field-group score-field">
+                <label class="field-label" id="rivalScoreLabel">Rival</label>
+                <input type="number" id="scoreRival" class="input-field score-input" placeholder="0" min="0" max="20" value="0" />
+              </div>
+            </div>
+            <button class="btn btn-add" id="addBtn" onclick="addParticipant()">
+              ＋ Inscribir
             </button>
+          </div>
+          <p class="add-hint" id="addHint">Ingresa el nombre y el marcador que crees que quedará el partido</p>
+        </div>
+
+        <!-- Status + actions -->
+        <div class="participants-toolbar">
+          <div class="status-badge open" id="statusBadge">
+            <span class="status-dot"></span>
+            <span class="status-text">Inscripciones abiertas</span>
+          </div>
+          <div class="action-buttons">
+            <button class="btn btn-export" id="exportBtn" onclick="exportImage()" title="Exportar imagen">
+              📸 Exportar
+            </button>
+            <button class="btn btn-close-reg" id="closeRegBtn" onclick="confirmCloseRegistration()">
+              🔴 Cerrar inscripciones
+            </button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap" id="tableWrap">
+          <table class="participants-table" id="participantsTable">
+            <thead>
+              <tr>
+                <th class="th-num">#</th>
+                <th class="th-name">Participante</th>
+                <th class="th-score">Marcador 🇨🇴 vs <span id="rivalHead">Rival</span></th>
+                <th class="th-result">Pronóstico</th>
+                <th class="th-actions" id="actionsHead">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="participantsList"></tbody>
+          </table>
+          <div class="empty-state" id="emptyState">
+            <span class="empty-icon">⚽</span>
+            <p>Aún no hay participantes inscritos.<br/>¡Sé el primero en poner tu marcador!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SECTION: EN VIVO ── -->
+      <section class="panel" id="panel-envivo">
+        <div class="panel-header">
+          <h1 class="panel-title"><span>🔴</span> Marcador en Vivo</h1>
+          <p class="panel-sub">Actualiza el marcador y ve quién va ganando la pulla</p>
+        </div>
+
+        <div class="card live-card">
+          <div class="live-input-row">
+            <div class="live-team-block">
+              <span class="live-flag">🇨🇴</span>
+              <span class="live-team-name">Colombia</span>
+              <input type="number" id="liveCol" class="input-field live-score-input" min="0" max="20" value="0" />
+            </div>
+            <span class="live-vs">:</span>
+            <div class="live-team-block">
+              <span class="live-flag" id="liveFlagRival">🏳️</span>
+              <span class="live-team-name" id="liveRivalName">Rival</span>
+              <input type="number" id="liveRiv" class="input-field live-score-input" min="0" max="20" value="0" />
+            </div>
+            <div class="live-actions">
+              <button class="btn btn-live-update" onclick="updateLiveScore()">
+                ▶ Actualizar
+              </button>
+            </div>
+          </div>
+
+          <!-- Marcador activo display -->
+          <div class="live-display" id="liveDisplay" style="display:none;">
+            <div class="live-scoreboard">
+              <span class="live-sb-team">🇨🇴 Colombia</span>
+              <span class="live-sb-score" id="liveSbScore">0 : 0</span>
+              <span class="live-sb-team" id="liveSbRival">Rival</span>
+            </div>
+            <div class="live-status-dot-wrap">
+              <span class="live-pulse-dot"></span>
+              <span class="live-status-label">EN VIVO</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ranking en vivo -->
+        <div class="card ranking-card" id="rankingCard" style="display:none;">
+          <h2 class="card-title">🏅 Ranking según marcador en vivo</h2>
+          <div class="ranking-table-wrap">
+            <table class="ranking-table" id="rankingTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Participante</th>
+                  <th>Su predicción</th>
+                  <th>Estado</th>
+                  <th>Ganancias estimadas</th>
+                </tr>
+              </thead>
+              <tbody id="rankingBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SECTION: FINALIZAR ── -->
+      <section class="panel" id="panel-finalizar">
+        <div class="panel-header">
+          <h1 class="panel-title"><span>🏁</span> Finalizar</h1>
+          <p class="panel-sub">Cierra el partido y gestiona la pulla</p>
+        </div>
+
+        <div class="finalizar-grid">
+          <!-- Card finalizar partido -->
+          <div class="card action-card danger-card">
+            <div class="action-card-icon">🏁</div>
+            <h3 class="action-card-title">Finalizar partido</h3>
+            <p class="action-card-desc">Calcula los ganadores con el marcador final exacto y guarda el resultado en el historial.</p>
             <button class="btn btn-finish-match" id="finishMatchBtn" onclick="confirmFinishMatch()">
               🏁 Finalizar partido
             </button>
           </div>
-        </div>
 
-        <!-- Marcador activo display -->
-        <div class="live-display" id="liveDisplay" style="display:none;">
-          <div class="live-scoreboard">
-            <span class="live-sb-team">🇨🇴 Colombia</span>
-            <span class="live-sb-score" id="liveSbScore">0 : 0</span>
-            <span class="live-sb-team" id="liveSbRival">Rival</span>
-          </div>
-          <div class="live-status-dot-wrap">
-            <span class="live-pulse-dot"></span>
-            <span class="live-status-label">EN VIVO</span>
+          <!-- Card nuevo partido -->
+          <div class="card action-card">
+            <div class="action-card-icon">🆕</div>
+            <h3 class="action-card-title">Nuevo partido</h3>
+            <p class="action-card-desc">Borra los datos del partido actual y prepara la app para una nueva pulla. El historial no se elimina.</p>
+            <button class="btn btn-clear-match" onclick="confirmClearMatch()">
+              🆕 Nuevo partido
+            </button>
           </div>
         </div>
-      </div>
 
-      <!-- RANKING EN VIVO -->
-      <div class="card ranking-card" id="rankingCard" style="display:none;">
-        <h2 class="card-title"><span class="icon">🏅</span> Ranking según marcador en vivo</h2>
-        <div class="ranking-table-wrap">
-          <table class="ranking-table" id="rankingTable">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Participante</th>
-                <th>Su predicción</th>
-                <th>Estado</th>
-                <th>Ganancias estimadas</th>
-              </tr>
-            </thead>
-            <tbody id="rankingBody"></tbody>
-          </table>
+        <!-- Info de estado actual -->
+        <div class="card status-summary-card">
+          <h3 class="card-title">Resumen del partido</h3>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <span class="summary-label">Partido</span>
+              <span class="summary-val" id="summaryMatch">Colombia vs Rival</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Participantes</span>
+              <span class="summary-val" id="summaryCount">0</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Pozo</span>
+              <span class="summary-val lime" id="summaryPrize">$0</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Marcador en vivo</span>
+              <span class="summary-val" id="summaryLive">—</span>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </section>
+      </section>
 
-  <!-- PARTICIPANTS TABLE -->
-  <section class="participants-section" id="participantsSection">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title">📋 Participantes Inscritos</h2>
-        <div class="action-buttons">
-          <button class="btn btn-export" id="exportBtn" onclick="exportImage()" title="Exportar imagen">
-            📸 Exportar imagen
-          </button>
-          <button class="btn btn-close-reg" id="closeRegBtn" onclick="confirmCloseRegistration()">
-            🔴 Cerrar inscripciones
-          </button>
-        </div>
-      </div>
+    </main><!-- /main-content -->
 
-      <!-- STATUS BADGE -->
-      <div class="status-badge open" id="statusBadge">
-        <span class="status-dot"></span>
-        <span class="status-text">Inscripciones abiertas</span>
-      </div>
+  </div><!-- /app-shell -->
 
-      <!-- TABLE -->
-      <div class="table-wrap" id="tableWrap">
-        <table class="participants-table" id="participantsTable">
-          <thead>
-            <tr>
-              <th class="th-num">#</th>
-              <th class="th-name">Participante</th>
-              <th class="th-score">Marcador 🇨🇴 vs <span id="rivalHead">Rival</span></th>
-              <th class="th-result">Pronóstico</th>
-              <th class="th-actions" id="actionsHead">Acción</th>
-            </tr>
-          </thead>
-          <tbody id="participantsList"></tbody>
-        </table>
-        <div class="empty-state" id="emptyState">
-          <span class="empty-icon">⚽</span>
-          <p>Aún no hay participantes inscritos.<br/>¡Sé el primero en poner tu marcador!</p>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- ══ BOTTOM NAV (mobile) ══ -->
+  <nav class="bottom-nav">
+    <button class="bnav-item active" data-section="partido" onclick="navigateTo('partido')">
+      <span class="bnav-icon">⚽</span>
+      <span class="bnav-label">Partido</span>
+    </button>
+    <button class="bnav-item" data-section="participantes" onclick="navigateTo('participantes')">
+      <span class="bnav-icon">👥</span>
+      <span class="bnav-label">Jugadores</span>
+    </button>
+    <button class="bnav-item" data-section="envivo" onclick="navigateTo('envivo')">
+      <span class="bnav-icon">🔴</span>
+      <span class="bnav-label">En Vivo</span>
+    </button>
+    <button class="bnav-item" data-section="finalizar" onclick="navigateTo('finalizar')">
+      <span class="bnav-icon">🏁</span>
+      <span class="bnav-label">Finalizar</span>
+    </button>
+  </nav>
 
-  <!-- EXPORT PREVIEW (oculto, para html2canvas) -->
+  <!-- ══ EXPORT PREVIEW (oculto, para html2canvas) ══ -->
   <div id="exportPreview" class="export-preview" style="display:none;">
     <div class="export-inner" id="exportInner">
       <div class="export-header">
@@ -243,7 +340,9 @@
     </div>
   </div>
 
-  <!-- MODAL CERRAR INSCRIPCIONES -->
+  <!-- ══ MODALES ══ -->
+
+  <!-- Modal cerrar inscripciones -->
   <div class="modal-overlay" id="modalOverlay" onclick="cancelClose()">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-icon">🔴</div>
@@ -251,12 +350,12 @@
       <p class="modal-text">Una vez cerradas, no podrás agregar ni modificar participantes ni marcadores.</p>
       <div class="modal-actions">
         <button class="btn btn-cancel" onclick="cancelClose()">Cancelar</button>
-        <button class="btn btn-confirm-close" onclick="closeRegistration()">Sí, cerrar inscripciones</button>
+        <button class="btn btn-confirm-close" onclick="closeRegistration()">Sí, cerrar</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL FINALIZAR PARTIDO -->
+  <!-- Modal finalizar partido -->
   <div class="modal-overlay" id="finishModalOverlay" onclick="cancelFinish()">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-icon">🏁</div>
@@ -264,12 +363,12 @@
       <p class="modal-text">Se guardará el marcador final y los ganadores. Esta acción no se puede deshacer.</p>
       <div class="modal-actions">
         <button class="btn btn-cancel" onclick="cancelFinish()">Cancelar</button>
-        <button class="btn btn-confirm-finish" onclick="finishMatch()">Sí, finalizar partido</button>
+        <button class="btn btn-confirm-finish" onclick="finishMatch()">Sí, finalizar</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL RESULTADO FINAL -->
+  <!-- Modal resultado final -->
   <div class="modal-overlay" id="resultModalOverlay">
     <div class="modal modal-result" onclick="event.stopPropagation()">
       <div class="modal-icon">🏆</div>
@@ -281,14 +380,14 @@
     </div>
   </div>
 
-  <!-- MODAL LIMPIAR / NUEVO PARTIDO -->
+  <!-- Modal nuevo partido -->
   <div class="modal-overlay" id="clearModalOverlay" onclick="cancelClear()">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-icon">🆕</div>
       <h3 class="modal-title">¿Nuevo partido?</h3>
       <p class="modal-text">
         Se borrarán todos los participantes y el marcador actual.<br/>
-        <strong style="color:#FFD100;">El partido finalizado ya quedó guardado en el historial.</strong>
+        <strong style="color:#C8F400;">El partido finalizado ya quedó guardado en el historial.</strong>
       </p>
       <div class="modal-actions">
         <button class="btn btn-cancel" onclick="cancelClear()">Cancelar</button>
@@ -297,12 +396,10 @@
     </div>
   </div>
 
-  <!-- TOAST -->
-
-  <!-- TOAST -->
+  <!-- Toast -->
   <div class="toast" id="toast"></div>
 
-  <!-- Supabase SDK -->
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
   <script src="js/db.js"></script>

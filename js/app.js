@@ -3,6 +3,44 @@
    app.js  —  Lógica principal
    ========================================================== */
 
+
+// ══════════════════════════════════════════════════════════════
+//  NAVEGACIÓN POR SECCIONES
+// ══════════════════════════════════════════════════════════════
+ 
+function navigateTo(section) {
+  // Paneles
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('panel-' + section);
+  if (target) target.classList.add('active');
+ 
+  // Sidebar nav
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.section === section);
+  });
+ 
+  // Bottom nav
+  document.querySelectorAll('.bnav-item').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.section === section);
+  });
+ 
+  // Actualizar resumen al entrar en Finalizar
+  if (section === 'finalizar') updateSummary();
+}
+ 
+function updateSummary() {
+  const matchEl  = document.getElementById('summaryMatch');
+  const countEl  = document.getElementById('summaryCount');
+  const prizeEl  = document.getElementById('summaryPrize');
+  const liveEl   = document.getElementById('summaryLive');
+  if (matchEl)  matchEl.textContent  = `Colombia vs ${state.rival}`;
+  if (countEl)  countEl.textContent  = state.participants.length;
+  if (prizeEl)  prizeEl.textContent  = formatCOP(state.cuota * state.participants.length);
+  if (liveEl)   liveEl.textContent   = state.liveCol !== null
+    ? `${state.liveCol} : ${state.liveRiv}`
+    : '—';
+}
+
 // ID único del partido (para Supabase). Puedes cambiarlo por partido.
 const MATCH_ID = 'col-mundial-2026-v1';
 
