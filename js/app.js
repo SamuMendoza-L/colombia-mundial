@@ -354,6 +354,155 @@ function renderTable() {
         <td class="td-actions">${actionsHtml}</td>
       </tr>`;
   }).join('');
+
+  renderScoreboardStats();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TOP MARCADORES — conteo de predicciones repetidas
+// ══════════════════════════════════════════════════════════════
+
+function renderScoreboardStats() {
+  const wrap = document.getElementById('scoreboardStats');
+  if (!wrap) return; // el panel aún no existe en el HTML
+
+  const total = state.participants.length;
+
+  if (total === 0) {
+    wrap.innerHTML = `
+      <div class="empty-state visible">
+        <span class="empty-icon">📊</span>
+        <p>Aún no hay marcadores registrados.<br/>Inscribe participantes para ver el top.</p>
+      </div>`;
+    return;
+  }
+
+  // ── Agrupar por marcador exacto ──────────────────────────────
+  const counts = {}; // "col-riv" -> cantidad
+  state.participants.forEach(p => {
+    const key = `${p.col}-${p.rival}`;
+    counts[key] = (counts[key] || 0) + 1;
+  });
+
+  const entries = Object.entries(counts)
+    .map(([key, count]) => {
+      const [col, riv] = key.split('-');
+      return { col, riv, count };
+    })
+    .sort((a, b) => b.count - a.count);
+
+  // ── Asignar posición Top según umbral de repeticiones ────────
+  // Top 1: 4+ | Top 2: 3+ | Top 3: 2+ | resto: sin top (solo lista)
+  function topLabelFor(count) {
+    if (count >= 4) return 1;
+    if (count >= 3) return 2;
+    if (count >= 2) return 3;
+    return null;
+  }
+
+  // Agrupar entries por su nivel de Top para manejar empates en la misma posición
+  const topGroups = {}; // topNum -> [entries]
+  const noTop = [];
+  entries.forEach(e => {
+    const lvl = topLabelFor(e.count);
+    if (lvl === null) { noTop.push(e); return; }
+    if (!topGroups[lvl]) topGroups[lvl] = [];
+    topGroups[lvl].push(e);
+  });
+
+  let topHtml = '';
+  [1, 2, 3].forEach(lvl => {
+    if (!topGroups[lvl]) return;
+    topGroups[lvl].forEach(e => {
+      topHtml += `
+        <div class="score-rank-row rank-top-${lvl}">
+          <span class="score-rank-badge">TOP ${lvl}</span>
+          <span class="score-rank-pill">
+            <span class="score-col">${e.col}</span><span class="score-div">:</span><span class="score-riv">${e.riv}</span>
+          </span>
+          <span class="score-rank-count">${e.count} ${e.count === 1 ? 'persona' : 'personas'}</span>
+        </div>`;
+    });
+  });
+
+  // Marcadores sin nivel de Top (1 o más, pero bajo el umbral de Top 3) se listan aparte
+  let restHtml = '';
+  if (noTop.length > 0) {
+    restHtml = `
+      <div class="score-rest-list">
+        ${noTop.map(e => `
+          <div class="score-rest-row">
+            <span class="score-rank-pill small">
+              <span class="score-col">${e.col}</span><span class="score-div">:</span><span class="score-riv">${e.riv}</span>
+            </span>
+            <span class="score-rank-count">${e.count} ${e.count === 1 ? 'persona' : 'personas'}</span>
+          </div>`).join('')}
+      </div>`;
+  }
+
+  // ── Marcador único (frecuencia exactamente 1) ────────────────
+  const uniques = entries.filter(e => e.count === 1);
+  let uniqueHtml = '';
+  if (uniques.length > 0) {
+    uniqueHtml = `
+      <div class="score-highlight unique">
+        <span class="score-highlight-label">🎯 Marcador único</span>
+        <div class="score-highlight-items">
+          ${uniques.map(e => `<span class="score-rank-pill small">
+              <span class="score-col">${e.col}</span><span class="score-div">:</span><span class="score-riv">${e.riv}</span>
+            </span>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  // ── Marcador con menos registros (mínima frecuencia entre los que sí tienen votos) ──
+  const minCount = Math.min(...entries.map(e => e.count));
+  const leastCommon = entries.filter(e => e.count === minCount);
+  let leastHtml = '';
+  if (leastCommon.length > 0 && entries.length > 1) {
+    leastHtml = `
+      <div class="score-highlight least">
+        <span class="score-highlight-label">📉 Menos repetido</span>
+        <div class="score-highlight-items">
+          ${leastCommon.map(e => `<span class="score-rank-pill small">
+              <span class="score-col">${e.col}</span><span class="score-div">:</span><span class="score-riv">${e.riv}</span>
+            </span>`).join('')} <span class="score-rank-count">(${minCount} ${minCount === 1 ? 'persona' : 'personas'})</span>
+        </div>
+      </div>`;
+  }
+
+  // ── Marcadores razonables (0-0 a 5-5) que nadie ha dicho ──────
+  const saidSet = new Set(Object.keys(counts));
+  const neverSaid = [];
+  for (let c = 0; c <= 5; c++) {
+    for (let r = 0; r <= 5; r++) {
+      const key = `${c}-${r}`;
+      if (!saidSet.has(key)) neverSaid.push({ col: c, riv: r });
+    }
+  }
+  let neverHtml = '';
+  if (neverSaid.length > 0) {
+    neverHtml = `
+      <div class="score-highlight never">
+        <span class="score-highlight-label">🚫 Nadie ha dicho (sugeridos 0-0 a 5-5)</span>
+        <div class="score-highlight-items wrap">
+          ${neverSaid.slice(0, 20).map(e => `<span class="score-rank-pill tiny">
+              <span class="score-col">${e.col}</span><span class="score-div">:</span><span class="score-riv">${e.riv}</span>
+            </span>`).join('')}
+          ${neverSaid.length > 20 ? `<span class="score-more">+${neverSaid.length - 20} más</span>` : ''}
+        </div>
+      </div>`;
+  }
+
+  wrap.innerHTML = `
+    <div class="score-top-list">${topHtml}</div>
+    ${restHtml}
+    <div class="score-highlights-grid">
+      ${uniqueHtml}
+      ${leastHtml}
+    </div>
+    ${neverHtml}
+  `;
 }
 
 // ══════════════════════════════════════════════════════════════
