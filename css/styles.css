@@ -1,7 +1,6 @@
 /* ============================================================
-   PULLA COLOMBIA - MUNDIAL 2026
+   PULLA — QUINIELAS DE FÚTBOL
    Paleta: Lima #C8F400 | Negro #0D0D0D | Card #141414
-           Amarillo Colombia #FFD100 | Azul #002C6C | Rojo #CE1126
    ============================================================ */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -12,7 +11,7 @@
   --lime2:   #a8d000;
   --lime-glow: rgba(200,244,0,0.18);
 
-  /* Identidad Colombia */
+  /* Acentos opcionales (banderas, detalles) */
   --yellow:  #FFD100;
   --blue:    #002C6C;
   --blue2:   #0044A8;

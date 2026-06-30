@@ -1,5 +1,5 @@
 /* ==========================================================
-   PULLA COLOMBIA - MUNDIAL 2026
+   PULLA - QUINIELAS DE FÚTBOL
    app.js  —  Lógica principal
    ========================================================== */
 
@@ -32,29 +32,31 @@ function updateSummary() {
   const countEl  = document.getElementById('summaryCount');
   const prizeEl  = document.getElementById('summaryPrize');
   const liveEl   = document.getElementById('summaryLive');
-  if (matchEl)  matchEl.textContent  = `Colombia vs ${state.rival}`;
+  if (matchEl)  matchEl.textContent  = `${state.teamA} vs ${state.teamB}`;
   if (countEl)  countEl.textContent  = state.participants.length;
   if (prizeEl)  prizeEl.textContent  = formatCOP(state.cuota * state.participants.length);
-  if (liveEl)   liveEl.textContent   = state.liveCol !== null
-    ? `${state.liveCol} : ${state.liveRiv}`
+  if (liveEl)   liveEl.textContent   = state.liveA !== null
+    ? `${state.liveA} : ${state.liveB}`
     : '—';
 }
 
 // ID único del partido (para Supabase). Puedes cambiarlo por partido.
-const MATCH_ID = 'col-mundial-2026-v1';
+const MATCH_ID = 'pulla-match-v1';
 
 // ── Estado global ─────────────────────────────────────────────
 const state = {
   matchId:      MATCH_ID,
-  rival:        'Rival',
-  rivalFlag:    '🏳️',
+  teamA:        'Equipo A',
+  teamAFlag:    '🏳️',
+  teamB:        'Equipo B',
+  teamBFlag:    '🏳️',
   cuota:        50000,
   participants: [],
   closed:       false,
   finished:     false,
   editingId:    null,
-  liveCol:      null,   // null = no iniciado
-  liveRiv:      null,
+  liveA:        null,   // null = no iniciado
+  liveB:        null,
 };
 
 // ── Guardar en DB (debounced) ─────────────────────────────────
@@ -70,14 +72,16 @@ function scheduleSave() {
 function buildPayload() {
   return {
     matchId:      state.matchId,
-    rival:        state.rival,
-    rivalFlag:    state.rivalFlag,
+    teamA:        state.teamA,
+    teamAFlag:    state.teamAFlag,
+    teamB:        state.teamB,
+    teamBFlag:    state.teamBFlag,
     cuota:        state.cuota,
     participants: state.participants,
     closed:       state.closed,
     finished:     state.finished,
-    liveCol:      state.liveCol,
-    liveRiv:      state.liveRiv,
+    liveA:        state.liveA,
+    liveB:        state.liveB,
   };
 }
 
@@ -85,30 +89,40 @@ async function loadAndRestore() {
   const { data } = await dbLoadMatch(MATCH_ID);
   if (!data) return;
 
-  const d = data.matchId ? data : data; // Supabase devuelve la fila completa
-  state.rival        = d.rival        || 'Rival';
-  state.rivalFlag    = d.rivalFlag    || '🏳️';
+  const d = data;
+  // Retrocompatibilidad con datos guardados antes (Colombia vs rival)
+  state.teamA        = d.teamA        || 'Colombia'      || 'Equipo A';
+  state.teamAFlag    = d.teamAFlag    || '🇨🇴'           || '🏳️';
+  state.teamB        = d.teamB        || d.rival         || 'Equipo B';
+  state.teamBFlag    = d.teamBFlag    || d.rivalFlag     || '🏳️';
   state.cuota        = d.cuota        || 50000;
-  state.participants = d.participants || [];
+  state.participants = (d.participants || []).map(p => ({
+    id:   p.id,
+    name: p.name,
+    a:    p.a    ?? p.col   ?? 0,  // compat con campo viejo 'col'
+    b:    p.b    ?? p.rival ?? 0,  // compat con campo viejo 'rival'
+    paid: p.paid || false,
+  }));
   state.closed       = d.closed       || false;
   state.finished     = d.finished     || false;
-  state.liveCol      = d.liveCol      ?? null;
-  state.liveRiv      = d.liveRiv      ?? null;
+  state.liveA        = d.liveA        ?? d.liveCol ?? null;
+  state.liveB        = d.liveB        ?? d.liveRiv ?? null;
 
   // Restaurar campos
-  document.getElementById('rival').value = state.rival;
+  document.getElementById('teamA').value = state.teamA === 'Equipo A' ? '' : state.teamA;
+  document.getElementById('teamB').value = state.teamB === 'Equipo B' ? '' : state.teamB;
   document.getElementById('cuota').value = state.cuota;
 
   if (state.closed || state.finished) applyClosedUI();
   if (state.finished) applyFinishedUI();
 
-  updateRival();
+  updateTeams();
   updatePrize();
   renderTable();
 
-  if (state.liveCol !== null) {
-    document.getElementById('liveCol').value = state.liveCol;
-    document.getElementById('liveRiv').value = state.liveRiv;
+  if (state.liveA !== null) {
+    document.getElementById('liveA').value = state.liveA;
+    document.getElementById('liveB').value = state.liveB;
     showLiveDisplay();
     renderRanking();
   }
@@ -120,15 +134,11 @@ function formatCOP(n) {
   return '$' + Math.round(n).toLocaleString('es-CO');
 }
 
-function getResult(col, riv) {
-  col = parseInt(col); riv = parseInt(riv);
-  if (col > riv)   return { label: 'Victoria 🇨🇴', cls: 'result-win',  exportCls: 'export-win',  rank: 0 };
-  if (col === riv) return { label: 'Empate',        cls: 'result-draw', exportCls: 'export-draw', rank: 1 };
-  return              { label: 'Derrota',           cls: 'result-lose', exportCls: 'export-lose', rank: 2 };
-}
-
-function scoreMatches(p) {
-  return p.col === state.liveCol && p.rival === state.liveRiv;
+function getResult(a, b) {
+  a = parseInt(a); b = parseInt(b);
+  if (a > b)   return { label: `Gana ${escHtml(state.teamA)}`, cls: 'result-win',  exportCls: 'export-win',  rank: 0 };
+  if (a === b) return { label: 'Empate',                       cls: 'result-draw', exportCls: 'export-draw', rank: 1 };
+  return            { label: `Gana ${escHtml(state.teamB)}`,   cls: 'result-lose', exportCls: 'export-lose', rank: 2 };
 }
 
 function uid() {
@@ -150,6 +160,7 @@ function escHtml(s) {
 
 // ── Banderas por país ─────────────────────────────────────────
 const FLAGS = {
+  colombia: '🇨🇴',
   argentina: '🇦🇷', brasil: '🇧🇷', brazil: '🇧🇷', mexico: '🇲🇽', méxico: '🇲🇽',
   españa: '🇪🇸', espana: '🇪🇸', spain: '🇪🇸', alemania: '🇩🇪', germany: '🇩🇪',
   francia: '🇫🇷', france: '🇫🇷', italia: '🇮🇹', italy: '🇮🇹',
@@ -162,28 +173,48 @@ const FLAGS = {
   marruecos: '🇲🇦', morocco: '🇲🇦', senegal: '🇸🇳', ghana: '🇬🇭', nigeria: '🇳🇬',
   japón: '🇯🇵', japon: '🇯🇵', japan: '🇯🇵', corea: '🇰🇷', korea: '🇰🇷',
   australia: '🇦🇺', canada: '🇨🇦', canadá: '🇨🇦',
+  suiza: '🇨🇭', switzerland: '🇨🇭', polonia: '🇵🇱', poland: '🇵🇱',
+  serbia: '🇷🇸', dinamarca: '🇩🇰', denmark: '🇩🇰', suecia: '🇸🇪', sweden: '🇸🇪',
+  noruega: '🇳🇴', norway: '🇳🇴', escocia: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', scotland: '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+  gales: '🏴󠁧󠁢󠁷󠁬󠁳󠁿', wales: '🏴󠁧󠁢󠁷󠁬󠁳󠁿', turquia: '🇹🇷', turquía: '🇹🇷', turkey: '🇹🇷',
+  egipto: '🇪🇬', egypt: '🇪🇬', tunez: '🇹🇳', túnez: '🇹🇳', tunisia: '🇹🇳',
+  argelia: '🇩🇿', algeria: '🇩🇿', camerun: '🇨🇲', camerún: '🇨🇲', cameroon: '🇨🇲',
+  costa: '🇨🇮', 'costa de marfil': '🇨🇮', 'ivory coast': '🇨🇮',
+  arabia: '🇸🇦', 'arabia saudita': '🇸🇦', 'saudi arabia': '🇸🇦',
+  iran: '🇮🇷', irán: '🇮🇷', irak: '🇮🇶', iraq: '🇮🇶', qatar: '🇶🇦',
+  china: '🇨🇳', india: '🇮🇳', 'nueva zelanda': '🇳🇿', 'new zealand': '🇳🇿',
+  jamaica: '🇯🇲', 'republica dominicana': '🇩🇴', 'república dominicana': '🇩🇴',
+  cuba: '🇨🇺', haiti: '🇭🇹', haití: '🇭🇹', curazao: '🇨🇼', curaçao: '🇨🇼',
 };
 
 function getFlag(name) {
   return FLAGS[name.trim().toLowerCase()] || '🏳️';
 }
 
-// ── Actualizar UI rival ───────────────────────────────────────
-function updateRival() {
-  const val = document.getElementById('rival').value.trim();
-  state.rival = val || 'Rival';
-  state.rivalFlag = getFlag(state.rival);
+// ── Actualizar UI de ambos equipos ──────────────────────────────
+function updateTeams() {
+  const valA = document.getElementById('teamA').value.trim();
+  const valB = document.getElementById('teamB').value.trim();
+  state.teamA = valA || 'Equipo A';
+  state.teamB = valB || 'Equipo B';
+  state.teamAFlag = getFlag(state.teamA);
+  state.teamBFlag = getFlag(state.teamB);
 
-  document.getElementById('rivalFlag').textContent       = state.rivalFlag;
-  document.getElementById('rivalNameDisplay').textContent = state.rival;
-  document.getElementById('rivalHead').textContent        = state.rival;
-  document.getElementById('rivalScoreLabel').textContent  = state.rival;
-  document.getElementById('liveRivalName').textContent    = state.rival;
-  document.getElementById('liveFlagRival').textContent    = state.rivalFlag;
-  document.getElementById('liveSbRival').textContent      = `${state.rivalFlag} ${state.rival}`;
+  document.getElementById('teamAFlag').textContent        = state.teamAFlag;
+  document.getElementById('teamANameDisplay').textContent = state.teamA;
+  document.getElementById('teamBFlag').textContent        = state.teamBFlag;
+  document.getElementById('teamBNameDisplay').textContent = state.teamB;
+
+  document.getElementById('teamAScoreLabel').textContent  = state.teamA;
+  document.getElementById('teamBScoreLabel').textContent  = state.teamB;
+
+  document.getElementById('liveTeamAName').textContent    = state.teamA;
+  document.getElementById('liveTeamAFlag').textContent    = state.teamAFlag;
+  document.getElementById('liveTeamBName').textContent    = state.teamB;
+  document.getElementById('liveTeamBFlag').textContent    = state.teamBFlag;
 
   const th = document.querySelector('.th-score');
-  if (th) th.innerHTML = `Marcador 🇨🇴 vs <span id="rivalHead">${escHtml(state.rival)}</span>`;
+  if (th) th.innerHTML = `Marcador <span id="teamAHead">${escHtml(state.teamA)}</span> vs <span id="teamBHead">${escHtml(state.teamB)}</span>`;
 
   scheduleSave();
 }
@@ -236,36 +267,36 @@ function addParticipant() {
     return;
   }
 
-  const nameEl     = document.getElementById('participantName');
-  const scoreColEl = document.getElementById('scoreCol');
-  const scoreRivEl = document.getElementById('scoreRival');
+  const nameEl  = document.getElementById('participantName');
+  const scoreAEl = document.getElementById('scoreA');
+  const scoreBEl = document.getElementById('scoreB');
 
   const name = nameEl.value.trim();
-  const col  = parseInt(scoreColEl.value) || 0;
-  const riv  = parseInt(scoreRivEl.value) || 0;
+  const a = parseInt(scoreAEl.value) || 0;
+  const b = parseInt(scoreBEl.value) || 0;
 
   if (!name) { showToast('⚠️ Ingresa el nombre del participante'); nameEl.focus(); return; }
 
   if (state.editingId) {
     const p = state.participants.find(p => p.id === state.editingId);
-    if (p) { p.name = name; p.col = col; p.rival = riv; }
+    if (p) { p.name = name; p.a = a; p.b = b; }
     state.editingId = null;
     document.getElementById('addBtn').textContent = '＋ Inscribir';
     document.getElementById('addHint').textContent = 'Ingresa el nombre y el marcador que crees que quedará el partido';
     showToast(`✅ ${name} actualizado`);
   } else {
-    state.participants.push({ id: uid(), name, col, rival: riv, paid: false });
-    showToast(`🎉 ${name} inscrito con ${col}:${riv}`);
+    state.participants.push({ id: uid(), name, a, b, paid: false });
+    showToast(`🎉 ${name} inscrito con ${a}:${b}`);
   }
 
   nameEl.value = '';
-  scoreColEl.value = 0;
-  scoreRivEl.value = 0;
+  scoreAEl.value = 0;
+  scoreBEl.value = 0;
   nameEl.focus();
 
   renderTable();
   updatePrize();
-  if (state.liveCol !== null) renderRanking();
+  if (state.liveA !== null) renderRanking();
   scheduleSave();
 }
 
@@ -277,8 +308,8 @@ function editParticipant(id) {
 
   state.editingId = id;
   document.getElementById('participantName').value = p.name;
-  document.getElementById('scoreCol').value        = p.col;
-  document.getElementById('scoreRival').value      = p.rival;
+  document.getElementById('scoreA').value          = p.a;
+  document.getElementById('scoreB').value          = p.b;
   document.getElementById('addBtn').textContent    = '✏️ Guardar cambio';
   document.getElementById('addHint').textContent   = `Editando a: ${p.name}`;
   document.getElementById('participantName').focus();
@@ -297,17 +328,22 @@ function deleteParticipant(id) {
     state.editingId = null;
     document.getElementById('addBtn').textContent    = '＋ Inscribir';
     document.getElementById('participantName').value = '';
-    document.getElementById('scoreCol').value        = 0;
-    document.getElementById('scoreRival').value      = 0;
+    document.getElementById('scoreA').value          = 0;
+    document.getElementById('scoreB').value          = 0;
+    document.getElementById('addHint').textContent   = 'Ingresa el nombre y el marcador que crees que quedará el partido';
   }
+
   renderTable();
   updatePrize();
-  if (state.liveCol !== null) renderRanking();
+  if (state.liveA !== null) renderRanking();
   scheduleSave();
   showToast(`🗑️ ${p.name} eliminado`);
 }
 
-// ── Renderizar tabla de participantes ─────────────────────────
+// ══════════════════════════════════════════════════════════════
+//  RENDER TABLA DE PARTICIPANTES
+// ══════════════════════════════════════════════════════════════
+
 function renderTable() {
   const tbody = document.getElementById('participantsList');
   const empty = document.getElementById('emptyState');
@@ -320,7 +356,7 @@ function renderTable() {
   empty.classList.remove('visible');
 
   tbody.innerHTML = state.participants.map((p, i) => {
-    const res = getResult(p.col, p.rival);
+    const res = getResult(p.a, p.b);
     const actionsHtml = (state.closed || state.finished)
       ? `<div class="action-cell">
            <label class="pay-check ${p.paid ? 'is-paid' : ''}">
@@ -345,9 +381,9 @@ function renderTable() {
         <td class="td-name">${escHtml(p.name)}</td>
         <td class="td-score">
           <span class="score-pill">
-            <span class="score-col">${p.col}</span>
+            <span class="score-col">${p.a}</span>
             <span class="score-div">:</span>
-            <span class="score-riv">${p.rival}</span>
+            <span class="score-riv">${p.b}</span>
           </span>
         </td>
         <td class="td-result"><span class="result-tag ${res.cls}">${res.label}</span></td>
@@ -378,9 +414,9 @@ function renderScoreboardStats() {
   }
 
   // ── Agrupar por marcador exacto ──────────────────────────────
-  const counts = {}; // "col-riv" -> cantidad
+  const counts = {}; // "a-b" -> cantidad
   state.participants.forEach(p => {
-    const key = `${p.col}-${p.rival}`;
+    const key = `${p.a}-${p.b}`;
     counts[key] = (counts[key] || 0) + 1;
   });
 
@@ -509,52 +545,54 @@ function renderScoreboardStats() {
 // ══════════════════════════════════════════════════════════════
 
 function updateLiveScore() {
-  const col = parseInt(document.getElementById('liveCol').value) || 0;
-  const riv = parseInt(document.getElementById('liveRiv').value) || 0;
-  state.liveCol = col;
-  state.liveRiv = riv;
+  const a = parseInt(document.getElementById('liveA').value) || 0;
+  const b = parseInt(document.getElementById('liveB').value) || 0;
+  state.liveA = a;
+  state.liveB = b;
   showLiveDisplay();
   renderRanking();
   scheduleSave();
-  showToast(`🔴 Marcador actualizado: ${col} : ${riv}`);
+  showToast(`🔴 Marcador actualizado: ${a} : ${b}`);
 }
 
 function showLiveDisplay() {
   const d = document.getElementById('liveDisplay');
   d.style.display = 'block';
   document.getElementById('liveSbScore').textContent =
-    `${state.liveCol} : ${state.liveRiv}`;
-  document.getElementById('liveSbRival').textContent =
-    `${state.rivalFlag} ${state.rival}`;
+    `${state.liveA} : ${state.liveB}`;
+  document.getElementById('liveSbTeamA').textContent =
+    `${state.teamAFlag} ${state.teamA}`;
+  document.getElementById('liveSbTeamB').textContent =
+    `${state.teamBFlag} ${state.teamB}`;
   document.getElementById('rankingCard').style.display = 'block';
 }
 
 // ── Renderizar ranking ────────────────────────────────────────
 function renderRanking() {
-  if (state.liveCol === null) return;
+  if (state.liveA === null) return;
 
-  const liveCol = state.liveCol;
-  const liveRiv = state.liveRiv;
+  const liveA = state.liveA;
+  const liveB = state.liveB;
   const totalPot = state.cuota * state.participants.length;
 
   // Clasificar cada participante
   const ranked = state.participants.map(p => {
-    const exactMatch = (p.col === liveCol && p.rival === liveRiv);
+    const exactMatch = (p.a === liveA && p.b === liveB);
 
     // Distancia = diferencia de goles totales predichos vs en vivo
-    const distScore = Math.abs((p.col - p.rival) - (liveCol - liveRiv));
+    const distScore = Math.abs((p.a - p.b) - (liveA - liveB));
 
     // Resultado predicho vs resultado en vivo
-    const predRes = getResult(p.col, p.rival);
-    const liveRes = getResult(liveCol, liveRiv);
+    const predRes = getResult(p.a, p.b);
+    const liveRes = getResult(liveA, liveB);
     const resultMatch = predRes.rank === liveRes.rank;
 
     // ── Verificar si el marcador todavía es alcanzable ──
     // Si los goles en vivo ya superaron lo que predijo para cualquier equipo,
     // esa predicción está matemáticamente eliminada
-    const colEliminado  = liveCol > p.col;   // Colombia ya metió más goles de los que predijo
-    const rivEliminado  = liveRiv > p.rival; // El rival ya metió más goles de los que predijo
-    const stillPossible = !colEliminado && !rivEliminado;
+    const aEliminado     = liveA > p.a;
+    const bEliminado     = liveB > p.b;
+    const stillPossible  = !aEliminado && !bEliminado;
 
     return { ...p, exactMatch, distScore, resultMatch: resultMatch && stillPossible, stillPossible };
   });
@@ -574,7 +612,6 @@ function renderRanking() {
   const tbody = document.getElementById('rankingBody');
   tbody.innerHTML = ranked.map((p, i) => {
     const pos = i + 1;
-    const predRes = getResult(p.col, p.rival);
 
     let statusHtml;
     if (p.exactMatch) {
@@ -600,9 +637,9 @@ function renderRanking() {
         <td class="td-name">${escHtml(p.name)}</td>
         <td class="td-score">
           <span class="score-pill">
-            <span class="score-col">${p.col}</span>
+            <span class="score-col">${p.a}</span>
             <span class="score-div">:</span>
-            <span class="score-riv">${p.rival}</span>
+            <span class="score-riv">${p.b}</span>
           </span>
         </td>
         <td class="td-result">${statusHtml}</td>
@@ -616,7 +653,7 @@ function renderRanking() {
 // ══════════════════════════════════════════════════════════════
 
 function confirmFinishMatch() {
-  if (state.liveCol === null) {
+  if (state.liveA === null) {
     showToast('⚠️ Primero ingresa el marcador en vivo');
     return;
   }
@@ -637,19 +674,19 @@ async function finishMatch() {
 
   // Calcular ganadores finales
   const winners = state.participants.filter(p =>
-    p.col === state.liveCol && p.rival === state.liveRiv
+    p.a === state.liveA && p.b === state.liveB
   );
   const totalPot   = state.cuota * state.participants.length;
   const prizeEach  = winners.length > 0 ? totalPot / winners.length : 0;
 
   // Mostrar modal de resultado
-  const liveRes = getResult(state.liveCol, state.liveRiv);
+  const liveRes = getResult(state.liveA, state.liveB);
   const contentEl = document.getElementById('resultContent');
   contentEl.innerHTML = `
     <div class="final-scoreboard">
-      <span>🇨🇴 Colombia</span>
-      <span class="final-score">${state.liveCol} : ${state.liveRiv}</span>
-      <span>${state.rivalFlag} ${escHtml(state.rival)}</span>
+      <span>${state.teamAFlag} ${escHtml(state.teamA)}</span>
+      <span class="final-score">${state.liveA} : ${state.liveB}</span>
+      <span>${state.teamBFlag} ${escHtml(state.teamB)}</span>
     </div>
     <div style="margin:16px 0;">
       <span class="result-tag ${liveRes.cls}">${liveRes.label}</span>
@@ -657,7 +694,7 @@ async function finishMatch() {
     ${winners.length > 0
       ? `<p class="final-winners-label">🏆 Ganadores del pozo (${formatCOP(prizeEach)} c/u):</p>
          <ul class="final-winners-list">
-           ${winners.map(w => `<li>🎉 ${escHtml(w.name)} — predicción ${w.col}:${w.rival}</li>`).join('')}
+           ${winners.map(w => `<li>🎉 ${escHtml(w.name)} — predicción ${w.a}:${w.b}</li>`).join('')}
          </ul>`
       : `<p class="final-no-winner">😔 Nadie acertó el marcador exacto.</p>`
     }
@@ -668,13 +705,15 @@ async function finishMatch() {
   // Guardar en historial antes de persistir el estado final
   await dbSaveHistory({
     matchId:      state.matchId,
-    rival:        state.rival,
-    rivalFlag:    state.rivalFlag,
+    teamA:        state.teamA,
+    teamAFlag:    state.teamAFlag,
+    teamB:        state.teamB,
+    teamBFlag:    state.teamBFlag,
     cuota:        state.cuota,
     participants: state.participants,
-    liveCol:      state.liveCol,
-    liveRiv:      state.liveRiv,
-    winners:      winners.map(w => ({ name: w.name, col: w.col, rival: w.rival })),
+    liveA:        state.liveA,
+    liveB:        state.liveB,
+    winners:      winners.map(w => ({ name: w.name, a: w.a, b: w.b })),
     prizeEach:    prizeEach,
     totalPot:     totalPot,
     finishedAt:   new Date().toISOString(),
@@ -692,7 +731,7 @@ function closeResultModal() {
 
 // ── Aplicar UI de inscripciones cerradas ──────────────────────
 function applyClosedUI() {
-  ['rival', 'cuota', 'participantName', 'scoreCol', 'scoreRival'].forEach(id => {
+  ['teamA', 'teamB', 'cuota', 'participantName', 'scoreA', 'scoreB'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.disabled = true;
   });
@@ -712,7 +751,7 @@ function applyClosedUI() {
 function applyFinishedUI() {
   const finBtn = document.getElementById('finishMatchBtn');
   if (finBtn) { finBtn.disabled = true; finBtn.style.opacity = '0.4'; finBtn.style.cursor = 'not-allowed'; }
-  ['liveCol','liveRiv'].forEach(id => {
+  ['liveA','liveB'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.disabled = true;
   });
@@ -756,22 +795,22 @@ async function exportImage() {
   }
 
   document.getElementById('exportMatchLabel').textContent =
-    `🇨🇴 Colombia vs ${state.rivalFlag} ${state.rival}`;
+    `${state.teamAFlag} ${state.teamA} vs ${state.teamBFlag} ${state.teamB}`;
   document.getElementById('exportPrize').textContent =
     formatCOP(state.cuota * state.participants.length);
 
   const exportBody = document.getElementById('exportTableBody');
   exportBody.innerHTML = state.participants.map((p, i) => {
-    const res = getResult(p.col, p.rival);
+    const res = getResult(p.a, p.b);
     return `
       <tr>
         <td>${i + 1}</td>
         <td>${escHtml(p.name)}</td>
         <td>
           <span class="export-score-pill">
-            <span class="export-col">${p.col}</span>
+            <span class="export-col">${p.a}</span>
             <span class="export-div"> : </span>
-            <span class="export-riv">${p.rival}</span>
+            <span class="export-riv">${p.b}</span>
           </span>
         </td>
         <td><span class="export-tag ${res.exportCls}">${res.label}</span></td>
@@ -797,7 +836,8 @@ async function exportImage() {
     preview.style.display = 'none';
 
     const link = document.createElement('a');
-    link.download = `pulla-colombia-vs-${state.rival.toLowerCase().replace(/\s+/g, '-')}.png`;
+    const safeName = `${state.teamA}-vs-${state.teamB}`.toLowerCase().replace(/\s+/g, '-');
+    link.download = `pulla-${safeName}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
     showToast('✅ ¡Imagen descargada!');
@@ -833,24 +873,28 @@ async function clearMatch() {
   await dbClearMatch(state.matchId);
 
   // Resetear estado
-  state.rival        = 'Rival';
-  state.rivalFlag    = '🏳️';
+  state.teamA        = 'Equipo A';
+  state.teamAFlag    = '🏳️';
+  state.teamB        = 'Equipo B';
+  state.teamBFlag    = '🏳️';
   state.cuota        = 50000;
   state.participants = [];
   state.closed       = false;
   state.finished     = false;
   state.editingId    = null;
-  state.liveCol      = null;
-  state.liveRiv      = null;
+  state.liveA        = null;
+  state.liveB        = null;
 
   // Restaurar campos
-  document.getElementById('rival').value  = '';
+  document.getElementById('teamA').value  = '';
+  document.getElementById('teamB').value  = '';
   document.getElementById('cuota').value  = 50000;
-  document.getElementById('rival').disabled        = false;
+  document.getElementById('teamA').disabled        = false;
+  document.getElementById('teamB').disabled        = false;
   document.getElementById('cuota').disabled        = false;
   document.getElementById('participantName').disabled = false;
-  document.getElementById('scoreCol').disabled     = false;
-  document.getElementById('scoreRival').disabled   = false;
+  document.getElementById('scoreA').disabled       = false;
+  document.getElementById('scoreB').disabled       = false;
 
   const addBtn = document.getElementById('addBtn');
   addBtn.disabled    = false;
@@ -874,15 +918,15 @@ async function clearMatch() {
   badge.classList.add('open');
   badge.innerHTML = '<span class="status-dot"></span><span class="status-text">Inscripciones abiertas</span>';
 
-  document.getElementById('liveCol').value   = 0;
-  document.getElementById('liveRiv').value   = 0;
-  document.getElementById('liveCol').disabled = false;
-  document.getElementById('liveRiv').disabled = false;
+  document.getElementById('liveA').value   = 0;
+  document.getElementById('liveB').value   = 0;
+  document.getElementById('liveA').disabled = false;
+  document.getElementById('liveB').disabled = false;
   document.getElementById('liveDisplay').style.display  = 'none';
   document.getElementById('rankingCard').style.display  = 'none';
   document.getElementById('addHint').textContent = 'Ingresa el nombre y el marcador que crees que quedará el partido';
 
-  updateRival();
+  updateTeams();
   updatePrize();
   renderTable();
   showToast('🆕 Partido limpiado. ¡Listo para una nueva pulla!');
@@ -896,8 +940,10 @@ async function clearMatch() {
 document.addEventListener('DOMContentLoaded', async () => {
   initSupabase();
 
-  document.getElementById('rival').addEventListener('input', updateRival);
-  document.getElementById('rival').addEventListener('change', updateRival);
+  document.getElementById('teamA').addEventListener('input', updateTeams);
+  document.getElementById('teamA').addEventListener('change', updateTeams);
+  document.getElementById('teamB').addEventListener('input', updateTeams);
+  document.getElementById('teamB').addEventListener('change', updateTeams);
   document.getElementById('cuota').addEventListener('input', updatePrize);
   document.getElementById('participantName').addEventListener('keydown', e => {
     if (e.key === 'Enter') addParticipant();
@@ -907,7 +953,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Si no había datos previos, inicializar
   if (!state.participants.length && !state.closed) {
-    updateRival();
+    updateTeams();
     updatePrize();
     renderTable();
   }
