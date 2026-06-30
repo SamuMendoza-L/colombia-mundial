@@ -509,6 +509,7 @@ body {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   box-shadow: var(--shadow-sm);
+  margin-bottom: 32px;
 }
 
 .participants-table {
@@ -1440,13 +1441,14 @@ body {
   .prize-collected { flex-direction: column; align-items: center; }
   .collect-item { width: 100%; justify-content: center; }
   .score-highlights-grid { grid-template-columns: 1fr; }
+  .table-wrap { margin-bottom: 24px; }
 }
 
 /* ============================================================
    TOP MARCADORES — conteo de predicciones repetidas
    ============================================================ */
 
-.scoreboard-stats-card {}
+.scoreboard-stats-card { margin-top: 8px; }
 
 .score-top-list {
   display: flex;
