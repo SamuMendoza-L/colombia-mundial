@@ -23,9 +23,10 @@ function dbReady() {
 // ── Guardar estado completo del partido ───────────────────────
 async function dbSaveMatch(matchData) {
   if (!dbReady()) return localSave('pulla_match', matchData);
+  const { matchId, ...rest } = matchData; // quitamos matchId, Supabase usa 'id'
   const { data, error } = await supabaseClient
     .from('matches')
-    .upsert({ id: matchData.matchId, ...matchData }, { onConflict: 'id' });
+    .upsert({ id: matchId, ...rest }, { onConflict: 'id' });
   if (error) { console.error('dbSaveMatch:', error); localSave('pulla_match', matchData); }
   return { data, error };
 }
