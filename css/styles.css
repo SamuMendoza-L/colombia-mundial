@@ -499,6 +499,45 @@ body {
   50%       { opacity: 0.3; }
 }
 
+/* Buscador de participantes */
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.search-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 14px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+.search-input {
+  padding-left: 38px;
+  padding-right: 38px;
+}
+.search-clear {
+  position: absolute;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.search-clear:hover {
+  background: rgba(206,17,38,0.2);
+  color: #ff6b7a;
+}
+
 /* Table */
 .table-wrap {
   background: var(--surface);

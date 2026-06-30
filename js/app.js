@@ -57,6 +57,7 @@ const state = {
   editingId:    null,
   liveA:        null,   // null = no iniciado
   liveB:        null,
+  searchTerm:   '',
 };
 
 // ── Guardar en DB (debounced) ─────────────────────────────────
@@ -345,17 +346,35 @@ function deleteParticipant(id) {
 // ══════════════════════════════════════════════════════════════
 
 function renderTable() {
-  const tbody = document.getElementById('participantsList');
-  const empty = document.getElementById('emptyState');
+  const tbody       = document.getElementById('participantsList');
+  const empty       = document.getElementById('emptyState');
+  const noResults   = document.getElementById('noResultsState');
+  const term        = state.searchTerm.trim().toLowerCase();
 
   if (state.participants.length === 0) {
     tbody.innerHTML = '';
     empty.classList.add('visible');
+    noResults.classList.remove('visible');
+    renderScoreboardStats();
     return;
   }
   empty.classList.remove('visible');
 
-  tbody.innerHTML = state.participants.map((p, i) => {
+  // El # de fila refleja la posición real en la lista completa (no la filtrada)
+  const indexed = state.participants.map((p, i) => ({ p, num: i + 1 }));
+  const filtered = term
+    ? indexed.filter(({ p }) => p.name.toLowerCase().includes(term))
+    : indexed;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    noResults.classList.add('visible');
+    renderScoreboardStats();
+    return;
+  }
+  noResults.classList.remove('visible');
+
+  tbody.innerHTML = filtered.map(({ p, num }) => {
     const res = getResult(p.a, p.b);
     const actionsHtml = (state.closed || state.finished)
       ? `<div class="action-cell">
@@ -377,7 +396,7 @@ function renderTable() {
 
     return `
       <tr>
-        <td class="td-num">${i + 1}</td>
+        <td class="td-num">${num}</td>
         <td class="td-name">${escHtml(p.name)}</td>
         <td class="td-score">
           <span class="score-pill">
@@ -392,6 +411,30 @@ function renderTable() {
   }).join('');
 
   renderScoreboardStats();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BUSCADOR DE PARTICIPANTES
+// ══════════════════════════════════════════════════════════════
+
+function searchParticipants() {
+  const input = document.getElementById('searchParticipants');
+  state.searchTerm = input.value;
+
+  const clearBtn = document.getElementById('searchClearBtn');
+  if (clearBtn) clearBtn.style.display = state.searchTerm ? 'flex' : 'none';
+
+  renderTable();
+}
+
+function clearSearch() {
+  state.searchTerm = '';
+  const input = document.getElementById('searchParticipants');
+  if (input) input.value = '';
+  const clearBtn = document.getElementById('searchClearBtn');
+  if (clearBtn) clearBtn.style.display = 'none';
+  renderTable();
+  input.focus();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -948,6 +991,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('participantName').addEventListener('keydown', e => {
     if (e.key === 'Enter') addParticipant();
   });
+  document.getElementById('searchParticipants').addEventListener('input', searchParticipants);
 
   await loadAndRestore();
 
