@@ -391,23 +391,22 @@ function renderScoreboardStats() {
     })
     .sort((a, b) => b.count - a.count);
 
-  // ── Asignar posición Top según umbral de repeticiones ────────
-  // Top 1: 4+ | Top 2: 3+ | Top 3: 2+ | resto: sin top (solo lista)
-  function topLabelFor(count) {
-    if (count >= 4) return 1;
-    if (count >= 3) return 2;
-    if (count >= 2) return 3;
-    return null;
-  }
+  // ── Asignar posición Top por ranking real (dense ranking) ────
+  // El grupo con más votos es Top 1, el siguiente grupo distinto es Top 2,
+  // el siguiente es Top 3 — sin saltos, igual que en una carrera.
+  // Empates en el mismo conteo comparten la misma posición.
+  const uniqueCounts = [...new Set(entries.map(e => e.count))].sort((a, b) => b - a);
+  const countToRank = {}; // count -> posición (1, 2, 3...)
+  uniqueCounts.forEach((c, idx) => { countToRank[c] = idx + 1; });
 
-  // Agrupar entries por su nivel de Top para manejar empates en la misma posición
-  const topGroups = {}; // topNum -> [entries]
+  // Agrupar entries por su posición de ranking; solo mostramos Top 1-3 en destacado
+  const topGroups = {}; // rank -> [entries]
   const noTop = [];
   entries.forEach(e => {
-    const lvl = topLabelFor(e.count);
-    if (lvl === null) { noTop.push(e); return; }
-    if (!topGroups[lvl]) topGroups[lvl] = [];
-    topGroups[lvl].push(e);
+    const rank = countToRank[e.count];
+    if (rank > 3) { noTop.push(e); return; }
+    if (!topGroups[rank]) topGroups[rank] = [];
+    topGroups[rank].push(e);
   });
 
   let topHtml = '';
@@ -425,7 +424,7 @@ function renderScoreboardStats() {
     });
   });
 
-  // Marcadores sin nivel de Top (1 o más, pero bajo el umbral de Top 3) se listan aparte
+  // Marcadores fuera del Top 3 se listan aparte
   let restHtml = '';
   if (noTop.length > 0) {
     restHtml = `
