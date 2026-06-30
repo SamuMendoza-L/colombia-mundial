@@ -159,6 +159,13 @@
           </div>
         </div>
 
+        <!-- Buscador de participantes -->
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchParticipants" class="input-field search-input" placeholder="Buscar participante por nombre..." />
+          <button class="search-clear" id="searchClearBtn" onclick="clearSearch()" style="display:none;" title="Limpiar búsqueda">✕</button>
+        </div>
+
         <!-- Table -->
         <div class="table-wrap" id="tableWrap">
           <table class="participants-table" id="participantsTable">
@@ -176,6 +183,10 @@
           <div class="empty-state" id="emptyState">
             <span class="empty-icon">⚽</span>
             <p>Aún no hay participantes inscritos.<br/>¡Sé el primero en poner tu marcador!</p>
+          </div>
+          <div class="empty-state" id="noResultsState">
+            <span class="empty-icon">🔍</span>
+            <p>No se encontró ningún participante con ese nombre.</p>
           </div>
         </div>
 
