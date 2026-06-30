@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🇨🇴 Pulla Colombia - Mundial 2026</title>
+  <title>⚽ Pulla — Quinielas de fútbol</title>
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -22,7 +22,7 @@
         </div>
         <div class="brand-text">
           <span class="brand-title">PULLA</span>
-          <span class="brand-sub">COLOMBIA 🇨🇴</span>
+          <span class="brand-sub">QUINIELAS ⚽</span>
         </div>
       </div>
 
@@ -46,7 +46,7 @@
       </nav>
 
       <div class="sidebar-footer">
-        <div class="sidebar-badge">MUNDIAL 2026</div>
+        <div class="sidebar-badge">TU PULLA</div>
       </div>
     </aside>
 
@@ -57,30 +57,36 @@
       <section class="panel active" id="panel-partido">
         <div class="panel-header">
           <h1 class="panel-title"><span>⚽</span> Configurar Partido</h1>
-          <p class="panel-sub">Define el rival y la cuota de la pulla</p>
+          <p class="panel-sub">Define los equipos y la cuota de la pulla</p>
         </div>
 
         <!-- Match vs display -->
         <div class="match-hero">
           <div class="match-team">
-            <span class="match-flag">🇨🇴</span>
-            <span class="match-name">Colombia</span>
+            <span class="match-flag" id="teamAFlag">🏳️</span>
+            <span class="match-name" id="teamANameDisplay">Equipo A</span>
           </div>
           <div class="match-vs-block">
             <span class="match-vs">VS</span>
           </div>
           <div class="match-team rival-side">
-            <span class="match-flag" id="rivalFlag">🏳️</span>
-            <span class="match-name" id="rivalNameDisplay">Rival</span>
+            <span class="match-flag" id="teamBFlag">🏳️</span>
+            <span class="match-name" id="teamBNameDisplay">Equipo B</span>
           </div>
         </div>
 
         <!-- Setup fields -->
         <div class="fields-row">
           <div class="field-group">
-            <label class="field-label" for="rival">Rival de Colombia</label>
-            <input type="text" id="rival" class="input-field" placeholder="Ej: Argentina, Brasil, España..." maxlength="30" />
+            <label class="field-label" for="teamA">Equipo A</label>
+            <input type="text" id="teamA" class="input-field" placeholder="Ej: Colombia, Argentina, Brasil..." maxlength="30" />
           </div>
+          <div class="field-group">
+            <label class="field-label" for="teamB">Equipo B</label>
+            <input type="text" id="teamB" class="input-field" placeholder="Ej: España, México, Francia..." maxlength="30" />
+          </div>
+        </div>
+        <div class="fields-row">
           <div class="field-group">
             <label class="field-label" for="cuota">Cuota por persona</label>
             <div class="cuota-wrap">
@@ -121,13 +127,13 @@
             </div>
             <div class="score-fields">
               <div class="field-group score-field">
-                <label class="field-label">Colombia</label>
-                <input type="number" id="scoreCol" class="input-field score-input" placeholder="0" min="0" max="20" value="0" />
+                <label class="field-label" id="teamAScoreLabel">Equipo A</label>
+                <input type="number" id="scoreA" class="input-field score-input" placeholder="0" min="0" max="20" value="0" />
               </div>
               <span class="score-separator">:</span>
               <div class="field-group score-field">
-                <label class="field-label" id="rivalScoreLabel">Rival</label>
-                <input type="number" id="scoreRival" class="input-field score-input" placeholder="0" min="0" max="20" value="0" />
+                <label class="field-label" id="teamBScoreLabel">Equipo B</label>
+                <input type="number" id="scoreB" class="input-field score-input" placeholder="0" min="0" max="20" value="0" />
               </div>
             </div>
             <button class="btn btn-add" id="addBtn" onclick="addParticipant()">
@@ -160,7 +166,7 @@
               <tr>
                 <th class="th-num">#</th>
                 <th class="th-name">Participante</th>
-                <th class="th-score">Marcador 🇨🇴 vs <span id="rivalHead">Rival</span></th>
+                <th class="th-score">Marcador <span id="teamAHead">Equipo A</span> vs <span id="teamBHead">Equipo B</span></th>
                 <th class="th-result">Pronóstico</th>
                 <th class="th-actions" id="actionsHead">Acción</th>
               </tr>
@@ -191,15 +197,15 @@
         <div class="card live-card">
           <div class="live-input-row">
             <div class="live-team-block">
-              <span class="live-flag">🇨🇴</span>
-              <span class="live-team-name">Colombia</span>
-              <input type="number" id="liveCol" class="input-field live-score-input" min="0" max="20" value="0" />
+              <span class="live-flag" id="liveTeamAFlag">🏳️</span>
+              <span class="live-team-name" id="liveTeamAName">Equipo A</span>
+              <input type="number" id="liveA" class="input-field live-score-input" min="0" max="20" value="0" />
             </div>
             <span class="live-vs">:</span>
             <div class="live-team-block">
-              <span class="live-flag" id="liveFlagRival">🏳️</span>
-              <span class="live-team-name" id="liveRivalName">Rival</span>
-              <input type="number" id="liveRiv" class="input-field live-score-input" min="0" max="20" value="0" />
+              <span class="live-flag" id="liveTeamBFlag">🏳️</span>
+              <span class="live-team-name" id="liveTeamBName">Equipo B</span>
+              <input type="number" id="liveB" class="input-field live-score-input" min="0" max="20" value="0" />
             </div>
             <div class="live-actions">
               <button class="btn btn-live-update" onclick="updateLiveScore()">
@@ -211,9 +217,9 @@
           <!-- Marcador activo display -->
           <div class="live-display" id="liveDisplay" style="display:none;">
             <div class="live-scoreboard">
-              <span class="live-sb-team">🇨🇴 Colombia</span>
+              <span class="live-sb-team" id="liveSbTeamA">Equipo A</span>
               <span class="live-sb-score" id="liveSbScore">0 : 0</span>
-              <span class="live-sb-team" id="liveSbRival">Rival</span>
+              <span class="live-sb-team" id="liveSbTeamB">Equipo B</span>
             </div>
             <div class="live-status-dot-wrap">
               <span class="live-pulse-dot"></span>
@@ -277,7 +283,7 @@
           <div class="summary-grid">
             <div class="summary-item">
               <span class="summary-label">Partido</span>
-              <span class="summary-val" id="summaryMatch">Colombia vs Rival</span>
+              <span class="summary-val" id="summaryMatch">Equipo A vs Equipo B</span>
             </div>
             <div class="summary-item">
               <span class="summary-label">Participantes</span>
@@ -325,8 +331,8 @@
       <div class="export-header">
         <div class="export-tricolor"><span></span><span></span><span></span></div>
         <div class="export-title-wrap">
-          <span class="export-logo">🇨🇴 PULLA COLOMBIA</span>
-          <span class="export-match" id="exportMatchLabel">Colombia vs Rival</span>
+          <span class="export-logo">⚽ PULLA</span>
+          <span class="export-match" id="exportMatchLabel">Equipo A vs Equipo B</span>
         </div>
         <div class="export-prize-box">
           <div class="export-prize-label">🏆 POZO</div>
@@ -344,7 +350,7 @@
         </thead>
         <tbody id="exportTableBody"></tbody>
       </table>
-      <div class="export-footer">Mundial 2026 • ¡Arriba Colombia! 🏆</div>
+      <div class="export-footer">¡Que gane el mejor! 🏆</div>
     </div>
   </div>
 
