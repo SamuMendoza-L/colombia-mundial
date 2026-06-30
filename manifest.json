@@ -1,0 +1,25 @@
+{
+  "name": "Pulla Colombia - Mundial 2026",
+  "short_name": "Pulla Colombia",
+  "description": "Organiza la pulla de los partidos de Colombia en el Mundial 2026",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D0D0D",
+  "theme_color": "#C8F400",
+  "orientation": "portrait-primary",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
